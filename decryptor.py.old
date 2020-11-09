@@ -1,0 +1,301 @@
+#!/bin/bash
+import sys
+
+ABC="ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+ENGLISH_WORDS=["THE","OF","AND","A","TO","IN","IS","YOU","THAT","IT"]
+
+def substituition_cipher(txt,key):
+    for i in range(0,len(txt)):
+        c = ord(txt[i])
+        if c >= 65 and c <= 90:
+            c += key
+            if c > 90: # Overflow
+                c -= 26
+            elif c < 65: # Underflow
+                c += 26
+        txt[i] = chr(c)
+
+    return "".join(txt)
+
+
+def decrypt_all_files(files):
+    for filename in files:
+        print("FILE:",filename)
+        with open(filename,'r') as fp:
+            txt = fp.read()
+
+        for i in range(1,26):
+            dec_txt = substituition_cipher(list(txt),i)
+            #print(dec_txt)
+            for word in ENGLISH_WORDS:
+                if word in dec_txt.split(" "):
+                    print(word)
+                    print(dec_txt)
+                    print()
+                    return
+                    #print("FOUND:",i)
+
+
+def decrypt_file(filename,rot):
+    with open(filename,'r') as fp:
+        txt = fp.read()
+
+    print(substituition_cipher(list(txt),rot))
+
+
+# Values extracted from: http://pi.math.cornell.edu/~mec/2003-2004/cryptography/subs/frequencies.html
+ENGLISH_LETTERS_BY_FREQUENCY = [
+    'E','T','A','O','I','N','S','R','H','D','L','U','C','M','F','Y','W','G','P','B','V','K','X','Q','J','Z'
+]
+
+ENGLISH_LETTERS_FREQUENCY = {
+    'E': 12.02,
+    'T': 9.10,
+    'A': 8.12,
+    'O': 7.68,
+    'I': 7.31,
+    'N': 6.95,
+    'S': 6.28,
+    'R': 6.02,
+    'H': 5.92,
+    'D': 4.32,
+    'L': 3.98,
+    'U': 2.88,
+    'C': 2.71,
+    'M': 2.61,
+    'F': 2.30,
+    'Y': 2.11,
+    'W': 2.09,
+    'G': 2.03,
+    'P': 1.82,
+    'B': 1.49,
+    'V': 1.11,
+    'K': 0.69,
+    'X': 0.17,
+    'Q': 0.11,
+    'J': 0.10,
+    'Z': 0.07
+}
+
+
+
+def make_letter_freq_table(txt):
+    num_letters = 0
+    # Starts just counting letters
+    table = {
+    'E': 0,
+    'T': 0,
+    'A': 0,
+    'O': 0,
+    'I': 0,
+    'N': 0,
+    'S': 0,
+    'R': 0,
+    'H': 0,
+    'D': 0,
+    'L': 0,
+    'U': 0,
+    'C': 0,
+    'M': 0,
+    'F': 0,
+    'Y': 0,
+    'W': 0,
+    'G': 0,
+    'P': 0,
+    'B': 0,
+    'V': 0,
+    'K': 0,
+    'X': 0,
+    'Q': 0,
+    'J': 0,
+    'Z': 0
+    }
+    num_letters = 0
+    for c in txt:
+        c = ord(c)
+        if c >= 65 and c <= 90:
+            table[str(chr(c))] += 1
+            num_letters += 1
+
+    for k,v in table.items():
+        table[k] = round((v / num_letters)*100, 4)
+
+    print(table)
+
+    # Sort Table
+    table = { k: v for k, v in sorted(table.items(), key=lambda item: -item[1]) }
+
+    return list(table.keys())
+
+
+
+
+def mono_substituition_cipher(txt,key):
+    for c in txt:
+        # Check if is upper case from ASCII table
+        if c >= 65 and c <= 90:
+            pass
+
+# 'tlf' Text Letter Frequency
+# 'elf' English Letter Frequency
+def get_letter(c,tlf,elf):
+    for i in range(0,len(elf)):
+        if c == tlf[i]:
+            return elf[i]
+
+
+def mono_decoder(txt,kl={},elf=ENGLISH_LETTERS_BY_FREQUENCY):
+    tlf = make_letter_freq_table(txt)
+    res = ""
+    for c in txt:
+        if c in kl.keys():
+            res += kl[c]
+        else:
+            res += c
+            
+            #tmp = ord(c)
+            #if tmp >= 65 and tmp <= 90:
+            #    res += get_letter(c,tlf,elf)
+            #else:
+            #    res += c
+    return res
+
+
+# def affine(c1,p1,c2,p2):
+#     a = (c2/p2 - c1/p2)//(1-p1/p2)
+#     b = (c1 - a*p1) % 26
+#     return (a,b)
+
+# def affine_encode(p,ab):
+#     return (ab[0]*p + ab[1]) % 26
+
+# def affine_decode(c,ab):
+#     return ((c-ab[1])/ab[0]) % 26
+
+
+# def affine_all(txt,ab):
+#     res = ""
+#     for c in txt:
+#         c = ord(c)
+#         if c >= 65 and c <= 90:
+#             res += chr(affine_decode(c-65,ab)+65)
+#         else:
+#             res += chr(c)
+
+def text_of(filename):
+    with open(filename,'r') as fp:
+        return fp.read() 
+
+
+
+
+
+import re
+
+def match(arg,wordsfile='words.txt'):
+    arg = '^{}$'.format(arg.lower().replace('.','[a-zA-Z]'))
+    res = []
+    with open(wordsfile,'r') as ws:
+        for line in ws:
+            res.extend(re.findall(arg,line))
+    return res
+
+def confidence(matches):
+    return 1 / len(matches)
+
+
+def mono_decoder_2(txt):
+
+    #def remove_non_letters(txt):
+    #    for c in txt:
+    #        if not re.match("[a-zA-Z']",c):
+    #            txt = txt.replace(c,'')
+    #    return txt
+
+    
+    words_list = re.split('[ \n().,]',txt)
+    
+    # Remove all occurrences of the empty 
+    # element '' from the split 
+    words_set = set(filter(('').__ne__, words_list))
+
+    print(words_set)
+
+#match('ha.')
+#mono_decoder_2(text_of('cryptogram3.txt'))
+
+# cryptogram1.txt -> Vigenère
+# cryptogram2.txt -> Substituition
+# cryptogram3.txt -> Affine
+
+def mk_dot(txt):
+    i = 0
+    res = ''
+    for c in txt:
+        res += '.' if c.isupper() else c
+    return res
+
+if __name__ == '__main__':
+    c2_kl={
+        'J':'t', # Assuming: JHA -> the, JGG -> too
+        'G':'o', # Assuming: JHA -> the, JGG -> too
+        'A':'e', # Assuming: JHA -> the, JGG -> too
+        'H':'h', # Assuming: JHA -> the, JGG -> too
+        'S':'i', # Hinted by the letter frequency swap
+        'Y':'s',
+        'V':'n',
+        'L':'f',
+        'W':'g',
+        'E':'c',
+        'I':'a', 
+        'Q':'w', # Qhat -> what
+        'N':'r', # waNNant -> warrant
+        'U':'u',
+        'Z':'l', 
+        'C':'q', # reCuire -> require
+        'P':'d', # entitleP -> entitled
+        'M':'y', # necessarM -> necessary
+        'F':'v', # indiFiduals -> individuals
+        'K':'m', # Kiscellaneous -> miscellaneous
+        'R':'p', # RhilosoRhy -> philosophy
+        'T':'b', # Tut -> but
+        'D':'j', # Dudgment -> judgment
+        'B':'x', # eBisting -> existing
+        'O':'k' # manOind -> mankind
+    }
+
+    c3_kl={
+        'G':'t',
+        'Q':'h',
+        'X':'e',
+        'U':'a', # thUt -> that
+        'V':'s', # haV -> has
+        'I':'o', # tI -> to
+        'T':'r', # tToRNOe -> trouble
+        'R':'u', # tToRNOe -> trouble
+        'N':'b', # tToRNOe -> trouble
+        'O':'l', # tToRNOe -> trouble
+        'S':'w', # Sho -> who
+        'H':'i', # Hts -> its
+        'J':'p', # oJJose -> oppose
+        'C':'n', # Ceither -> neither
+        'B':'m', # eBpire -> empire (EXTRACTED OUT OF THE DECODED CONTEXT)
+        'M':'c', # whiMh -> which
+        'A':'y', # capacitA -> capacity
+        'K':'g', # lonK -> long
+        'F':'v', # ciFilisation -> civilisation
+        'Z':'f', # Zrom -> from
+        'L':'d', # LestroyeL -> destroyed
+        'L':'d', # taPe -> take (EXTRACTED OUT OF THE DECODED CONTEXT)
+        'Y':'q', # vanYuished -> vanquished
+        'P':'k', # liPe -> like
+    }
+
+    print('LETTERS LEFT:',(26 - len(c3_kl)))
+    
+    decoded = mono_decoder_2(text_of('cryptogram3.txt'))
+    print(decoded)
+    
+    #print(match(mk_dot('liPe')))
+

@@ -45,7 +45,6 @@ def mono_decoder_aux(txt):
     matches_by_confidence = []
     max_tuple = None
     for word in words_set:
-        #print(word)
         matched = match(mk_dot(word))
         if len(matched):
             tmp = (confidence(matched),matched,word)
@@ -71,16 +70,25 @@ def mono_decoder_aux(txt):
         
     for c,l,w in matches_by_confidence:
         if(max_tuple[0] == c):
-            print('Confidence:',max_tuple[0])
+            print('Confidence:',max_tuple[0],'| Word:',max_tuple[2],'Matched as:',max_tuple[1])
             return __extract_letter_translation(max_tuple[1],max_tuple[2])
 
 def mono_decoder(txt,kl={}):
-    know_letters = kl
+    known_letters = kl
 
-    while #txt not fully decrypted:
-        know_letters.update(mono_decoder_aux(txt))
+    def is_decrypted(txt):
+        for c in txt:
+            c = ord(c)
+            if c >= 65 and c <= 90:
+                return False
+        return True
+
+
+    txt = swap_letters(txt,kl=known_letters)
+    while not is_decrypted(txt):
+        known_letters.update(mono_decoder_aux(txt))
         txt = swap_letters(txt,kl=known_letters)
-
+    return txt
 
 ######################################################
 

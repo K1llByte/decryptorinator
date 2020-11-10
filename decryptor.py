@@ -1,4 +1,7 @@
-#!/bin/bash
+#!/bin/python
+
+import re
+import random
 
 def text_of(filename):
     with open(filename,'r') as fp:
@@ -13,7 +16,6 @@ def swap_letters(txt,kl={}):
             res += c
     return res
 
-import re
 
 def match(arg,wordsfile='words.txt'):
     arg = '^{}$'.format(arg.lower().replace('.','[a-zA-Z]'))
@@ -58,7 +60,7 @@ def mono_decoder_aux(txt):
     def __extract_letter_translation(matches,word):
         res = {}
         i = 0
-        selected_match = matches[0]
+        selected_match = random.choice(matches)
         for c in word:
             tmp = ord(c)
             # Check if is Uppercase letter
@@ -86,17 +88,46 @@ def mono_decoder(txt,kl={}):
 
     txt = swap_letters(txt,kl=known_letters)
     while not is_decrypted(txt):
-        known_letters.update(mono_decoder_aux(txt))
+        tmp = mono_decoder_aux(txt)
+        if tmp == None:
+            raise Exception('This decryption iteration is unviable')
+        known_letters.update(tmp)
         txt = swap_letters(txt,kl=known_letters)
     return txt
 
 ######################################################
 
 if __name__ == '__main__':
+    c2_kl={
+        'J':'t', # Assuming: JHA -> the, JGG -> too
+        'G':'o', # Assuming: JHA -> the, JGG -> too
+        'A':'e', # Assuming: JHA -> the, JGG -> too
+        'H':'h', # Assuming: JHA -> the, JGG -> too
+        'S':'i', # Hinted by the letter frequency swap
+        #'Y':'s',
+        #'V':'n',
+        #'L':'f',
+        #'W':'g',
+        #'E':'c',
+        #'I':'a', 
+        #'Q':'w', # Qhat -> what
+        #'N':'r', # waNNant -> warrant
+        #'U':'u',
+        #'Z':'l', 
+        #'C':'q', # reCuire -> require
+        #'P':'d', # entitleP -> entitled
+        #'M':'y', # necessarM -> necessary
+        #'F':'v', # indiFiduals -> individuals
+        #'K':'m', # Kiscellaneous -> miscellaneous
+        #'R':'p', # RhilosoRhy -> philosophy
+        #'T':'b', # Tut -> but
+        #'D':'j', # Dudgment -> judgment
+        #'B':'x', # eBisting -> existing
+        #'O':'k' # manOind -> mankind
+    }
+
     known_letters = {
-        'G':'t',
-        'Q':'h',
-        'X':'e',
+        #'G':'t',
         #'U':'a', # thUt -> that
         #'V':'s', # haV -> has
         #'I':'o', # tI -> to
@@ -120,7 +151,17 @@ if __name__ == '__main__':
         #'P':'k', # liPe -> like
     }
 
-    ciphertext = text_of('cryptogram3.txt')
+    ciphertext = text_of('cryptogram2.txt')
     #mixtext = swap_letters(ciphertext,kl=known_letters)
-    plaintext = mono_decoder(ciphertext,kl=known_letters)
+    plaintext = ""
+    try:
+        plaintext = mono_decoder(ciphertext,kl=c2_kl)
+    except Exception as e:
+        print(e)
+
+    # TODO: Decryption Accuracy rate value with
+    # matching the words in plaintext with the 
+    # words in the words file 
+
     print(plaintext)
+    

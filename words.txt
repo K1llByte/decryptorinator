@@ -13,6 +13,7 @@ absorb
 abuse
 academic
 accept
+accepted
 access
 accident
 accompany
@@ -66,8 +67,8 @@ affair
 affect
 afford
 afraid
-African
-African-American
+african
+african-american
 after
 afternoon
 again
@@ -85,7 +86,7 @@ ah
 ahead
 aid
 aide
-AIDS
+aids
 aim
 air
 aircraft
@@ -107,9 +108,9 @@ alter
 alternative
 although
 always
-AM
+am
 amazing
-American
+american
 among
 amount
 analysis
@@ -141,6 +142,7 @@ apparent
 apparently
 appeal
 appear
+appears
 appearance
 apple
 application
@@ -153,7 +155,7 @@ appropriate
 approval
 approve
 approximately
-Arab
+arab
 architect
 are
 area
@@ -174,7 +176,7 @@ article
 artist
 artistic
 as
-Asian
+asian
 aside
 ask
 asleep
@@ -281,7 +283,7 @@ bet
 better
 between
 beyond
-Bible
+bible
 big
 bike
 bill
@@ -341,7 +343,7 @@ briefly
 bright
 brilliant
 bring
-British
+british
 broad
 broken
 brother
@@ -376,7 +378,7 @@ camp
 campaign
 campus
 can
-Canadian
+canadian
 cancer
 candidate
 cap
@@ -401,7 +403,7 @@ cast
 cat
 catch
 category
-Catholic
+catholic
 cause
 ceiling
 celebrate
@@ -411,7 +413,7 @@ cell
 center
 central
 century
-CEO
+ceo
 ceremony
 certain
 certainly
@@ -445,14 +447,14 @@ chicken
 chief
 child
 childhood
-Chinese
+chinese
 chip
 chocolate
 choice
 cholesterol
 choose
-Christian
-Christmas
+christian
+christmas
 church
 cigarette
 circle
@@ -557,7 +559,7 @@ confirm
 conflict
 confront
 confusion
-Congress
+congress
 congressional
 connect
 connection
@@ -715,7 +717,7 @@ deliver
 delivery
 demand
 democracy
-Democrat
+democrat
 democratic
 demonstrate
 demonstration
@@ -801,7 +803,7 @@ diversity
 divide
 division
 divorce
-DNA
+dna
 do
 doctor
 document
@@ -904,7 +906,7 @@ engage
 engine
 engineer
 engineering
-English
+english
 enhance
 enjoy
 enormous
@@ -937,7 +939,7 @@ estimate
 etc
 ethics
 ethnic
-European
+european
 evaluate
 evaluation
 even
@@ -1117,7 +1119,7 @@ framework
 free
 freedom
 freeze
-French
+french
 frequency
 frequent
 frequently
@@ -1166,7 +1168,7 @@ generation
 genetic
 gentleman
 gently
-German
+german
 gesture
 get
 ghost
@@ -1184,7 +1186,7 @@ global
 glove
 go
 goal
-God
+god
 gold
 golden
 golf
@@ -1314,7 +1316,7 @@ hunting
 hurt
 husband
 hypothesis
-I
+i
 ice
 idea
 ideal
@@ -1364,7 +1366,7 @@ indeed
 independence
 independent
 index
-Indian
+indian
 indicate
 indication
 individual
@@ -1409,7 +1411,7 @@ interested
 interesting
 internal
 international
-Internet
+internet
 interpret
 interpretation
 intervention
@@ -1429,24 +1431,24 @@ involve
 involved
 involvement
 invoke
-Iraqi
-Irish
+iraqi
+irish
 iron
-Islamic
+islamic
 island
-Israeli
+israeli
 issue
 it
-Italian
+italian
 item
 its
 itself
 jacket
 jail
-Japanese
+japanese
 jet
-Jew
-Jewish
+jew
+jewish
 job
 join
 joint
@@ -1496,7 +1498,7 @@ largely
 last
 late
 later
-Latin
+latin
 latter
 laugh
 launch
@@ -1551,6 +1553,7 @@ link
 lip
 list
 listen
+listens
 literally
 literary
 literature
@@ -1653,7 +1656,7 @@ message
 metal
 meter
 method
-Mexican
+mexican
 middle
 might
 military
@@ -1704,9 +1707,9 @@ mouth
 move
 movement
 movie
-Mr
-Mrs
-Ms
+mr
+mrs
+ms
 much
 multiple
 murder
@@ -1715,7 +1718,7 @@ museum
 music
 musical
 musician
-Muslim
+muslim
 must
 mutual
 my
@@ -1817,7 +1820,7 @@ oil
 ok
 okay
 old
-Olympic
+olympic
 on
 once
 one
@@ -1878,7 +1881,7 @@ painter
 painting
 pair
 pale
-Palestinian
+palestinian
 palm
 pan
 panel
@@ -1909,7 +1912,7 @@ pattern
 pause
 pay
 payment
-PC
+pc
 peace
 peak
 peer
@@ -1975,7 +1978,7 @@ pleasure
 plenty
 plot
 plus
-PM
+pm
 pocket
 poem
 poet
@@ -2224,7 +2227,7 @@ reporter
 represent
 representation
 representative
-Republican
+republican
 reputation
 request
 require
@@ -2292,7 +2295,7 @@ run
 running
 rural
 rush
-Russian
+russian
 sacred
 sad
 safe
@@ -2353,7 +2356,7 @@ select
 selection
 self
 sell
-Senate
+senate
 senator
 send
 senior
@@ -2494,9 +2497,9 @@ soup
 source
 south
 southern
-Soviet
+soviet
 space
-Spanish
+spanish
 speak
 speaker
 special
@@ -2579,6 +2582,7 @@ stupid
 style
 subject
 submit
+submitted
 subsequent
 substance
 substantial
@@ -2606,7 +2610,7 @@ support
 supporter
 suppose
 supposed
-Supreme
+supreme
 sure
 surely
 surface
@@ -2704,6 +2708,7 @@ they
 thick
 thin
 thing
+things
 think
 thinking
 third
@@ -2798,7 +2803,7 @@ try
 tube
 tunnel
 turn
-TV
+tv
 twelve
 twenty
 twice
@@ -2821,7 +2826,7 @@ uniform
 union
 unique
 unit
-United
+united
 universal
 universe
 university

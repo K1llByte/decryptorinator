@@ -34,7 +34,7 @@ def mk_dot(txt):
         res += '.' if c.isupper() else c
     return res
 
-def mono_decoder(txt):
+def mono_decoder_aux(txt):
 
     words_list = re.split('[ \n().,]',txt)
     
@@ -74,6 +74,13 @@ def mono_decoder(txt):
             print('Confidence:',max_tuple[0])
             return __extract_letter_translation(max_tuple[1],max_tuple[2])
 
+def mono_decoder(txt,kl={}):
+    know_letters = kl
+
+    while #txt not fully decrypted:
+        know_letters.update(mono_decoder_aux(txt))
+        txt = swap_letters(txt,kl=known_letters)
+
 
 ######################################################
 
@@ -106,6 +113,6 @@ if __name__ == '__main__':
     }
 
     ciphertext = text_of('cryptogram3.txt')
-    mixtext = swap_letters(ciphertext,kl=known_letters)
-    plaintext = mono_decoder(mixtext)
+    #mixtext = swap_letters(ciphertext,kl=known_letters)
+    plaintext = mono_decoder(ciphertext,kl=known_letters)
     print(plaintext)

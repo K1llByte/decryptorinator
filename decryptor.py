@@ -95,6 +95,49 @@ def mono_decoder(txt,kl={}):
         txt = swap_letters(txt,kl=known_letters)
     return txt
 
+###################### Vigenère ######################
+
+def rot_char(char,key_char,inverse=False):
+    key = ord(key_char) - 65
+    c = ord(char)
+    if c >= 65 and c <= 90:
+        c += -key if inverse else key
+        if c > 90: # Overflow
+            c -= 26
+        elif c < 65: # Underflow
+            c += 26
+    return chr(c+32)
+
+def vigenere_decode(txt):
+    def swap_by_key(word,key):
+        res = ''
+        for i in range(len(key)):
+            if len(word) > i:
+                res += rot_char(word[i],key[i],True)
+            else:
+                return res
+        return res + word[i+1:]
+
+    #key = 'AOD'
+    #key = 'DFL'
+    key = 'AFB'
+    words_list = list(filter(('').__ne__, re.split('[ \n().,]',txt)))
+    
+    #return [swap_by_key(w,key) for w in words_list]
+    
+    selected_word = words_list[0]
+    must_match = ['the', 'and', 'for', 'are', 'but', 'not', 'you', 'all', 'any', 'can', 'had', 'her', 'was', 'one', 'our', 'out', 'day', 'get', 'has', 'him', 'his', 'how', 'man', 'new', 'now', 'old', 'see', 'two', 'way', 'who', 'boy', 'did', 'its', 'let', 'put', 'say', 'she', 'too', 'use']
+    for a in range(26):
+        for b in range(26):
+            for c in range(26):
+                key = chr(a+65) + chr(b+65) + chr(c+65)
+                #print(key)
+                if swap_by_key(selected_word,key) in must_match:
+                    print(key)
+                    print(swap_by_key(selected_word,key))
+                    return key
+    return None
+
 ######################################################
 
 if __name__ == '__main__':
@@ -151,17 +194,37 @@ if __name__ == '__main__':
         #'P':'k', # liPe -> like
     }
 
-    ciphertext = text_of('cryptogram2.txt')
-    #mixtext = swap_letters(ciphertext,kl=known_letters)
-    plaintext = ""
-    try:
-        plaintext = mono_decoder(ciphertext,kl=c2_kl)
-    except Exception as e:
-        print(e)
+    # ciphertext = text_of('cryptogram2.txt')
+    # #mixtext = swap_letters(ciphertext,kl=known_letters)
+    # plaintext = ""
+    # try:
+    #     plaintext = mono_decoder(ciphertext,kl=c2_kl)
+    # except Exception as e:
+    #     print(e)
 
     # TODO: Decryption Accuracy rate value with
     # matching the words in plaintext with the 
     # words in the words file 
 
-    print(plaintext)
+    # print(plaintext)
+
+    # Vigenere (AOD)
+    print("Result:",vigenere_decode(text_of('cryptogram1.txt')))
+
     
+
+# W=22
+# M=12
+# P=15
+
+# T=19
+# H=7
+# E=4
+
+# 22-19=3
+# 12-7=5
+# 15-4=11
+
+# D
+# F
+# L

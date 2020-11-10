@@ -111,7 +111,7 @@ def rot_char(char,key_char,inverse=False):
     return chr(c+32)
 
 def vigenere_decode(txt):
-    def swap_by_key(word,key):
+    def rot_by_key(word,key):
         res = ''
         for i in range(len(key)):
             if len(word) > i:
@@ -120,14 +120,27 @@ def vigenere_decode(txt):
                 return res
         return res + word[i+1:]
 
+    def rot_by_key_all(txt,key):
+        i = 0
+        res = ''
+        for c in txt:
+            res += rot_char(c,key[i],True)
+            i += 1
+            if len(key) == i:
+                i = 0
+        return res
+
+    key = 'DFL'
     #key = 'AOD'
     #key = 'DFL'
-    key = 'AFB'
+    #key = 'AFB'
     words_list = list(filter(('').__ne__, re.split('[ \n().,]',txt)))
-    
-    #return [swap_by_key(w,key) for w in words_list]
-    
-    selected_word = words_list[0]
+    return [rot_by_key(w,key) for w in words_list]
+
+    #words_together = ''.join(list(filter(lambda e : not e in ',.;?! \n',txt)))
+    #print(rot_by_key_all(words_together,'DFL'))
+
+    """ selected_word = words_list[0]
     must_match = ['the', 'and', 'for', 'are', 'but', 'not', 'you', 'all', 'any', 'can', 'had', 'her', 'was', 'one', 'our', 'out', 'day', 'get', 'has', 'him', 'his', 'how', 'man', 'new', 'now', 'old', 'see', 'two', 'way', 'who', 'boy', 'did', 'its', 'let', 'put', 'say', 'she', 'too', 'use']
     for a in range(26):
         for b in range(26):
@@ -138,7 +151,7 @@ def vigenere_decode(txt):
                     print(key)
                     print(swap_by_key(selected_word,key))
                     return key
-    return None
+    return None """
 
 ######################################################
 

@@ -97,6 +97,8 @@ def mono_decoder(txt,kl={}):
 
 ###################### Vigenère ######################
 
+
+
 def rot_char(char,key_char,inverse=False):
     key = ord(key_char) - 65
     c = ord(char)

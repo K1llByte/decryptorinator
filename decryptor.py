@@ -111,34 +111,43 @@ def rot_char(char,key_char,inverse=False):
     return chr(c+32)
 
 def vigenere_decode(txt):
-    def rot_by_key(word,key):
-        res = ''
-        for i in range(len(key)):
-            if len(word) > i:
-                res += rot_char(word[i],key[i],True)
-            else:
-                return res
-        return res + word[i+1:]
+    # def rot_by_key(word,key):
+    #     res = ''
+    #     for i in range(len(key)):
+    #         if len(word) > i:
+    #             res += rot_char(word[i],key[i],True)
+    #         else:
+    #             return res
+    #     return res + word[i+1:]
 
     def rot_by_key_all(txt,key):
         i = 0
         res = ''
         for c in txt:
-            res += rot_char(c,key[i],True)
+            tmp = ord(c)
+            if tmp >= 65 and tmp <= 90:
+                res += rot_char(c,key[i],True)
+            elif c != '\n':
+                res += c
+            else:
+                res += '\n'
+            
             i += 1
             if len(key) == i:
                 i = 0
         return res
 
-    key = 'DFL'
+    key = 'DFLVA'
+    # DFLVY
     #key = 'AOD'
     #key = 'DFL'
     #key = 'AFB'
-    words_list = list(filter(('').__ne__, re.split('[ \n().,]',txt)))
-    return [rot_by_key(w,key) for w in words_list]
 
-    #words_together = ''.join(list(filter(lambda e : not e in ',.;?! \n',txt)))
-    #print(rot_by_key_all(words_together,'DFL'))
+    # DFL       | the wgezbdly es thw gtoqdl wv our
+    # DFLBBB    | the aqezbfpi es xrw gvsadl yz our
+    # DFLCCCCCC | the zpfckdly hb wqw gurzeo wv pxa
+
+    return rot_by_key_all(txt,key)
 
     """ selected_word = words_list[0]
     must_match = ['the', 'and', 'for', 'are', 'but', 'not', 'you', 'all', 'any', 'can', 'had', 'her', 'was', 'one', 'our', 'out', 'day', 'get', 'has', 'him', 'his', 'how', 'man', 'new', 'now', 'old', 'see', 'two', 'way', 'who', 'boy', 'did', 'its', 'let', 'put', 'say', 'she', 'too', 'use']
@@ -224,7 +233,8 @@ if __name__ == '__main__':
     # print(plaintext)
 
     # Vigenere (AOD)
-    print("Result:",vigenere_decode(text_of('cryptogram1.txt')))
+    print(match('.....dly'))
+    print(vigenere_decode(text_of('cryptogram1.txt')))
 
     
 

@@ -233,7 +233,6 @@ if __name__ == '__main__':
     # print(plaintext)
 
     # Vigenere (AOD)
-    print(match('.....dly'))
     print(vigenere_decode(text_of('cryptogram1.txt')))
 
     

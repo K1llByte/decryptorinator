@@ -30,13 +30,6 @@ Exacly the same strategy of the Cyphertext #2
 
 Three letters are not present in this cryptogram, the letter: `D`, `E` and `W`
 
-
-# Monoalphabetic decryptor
-
-Reference for the 3000 most used words in english:
-
-https://www.ef.com/wwen/english-resources/english-vocabulary/top-3000-words/
-
 # Cyphertext #1
 
 The Vigenere cipher was a little harder a lucky to decipher manually, the inicial take for the cipher was to assume that 
@@ -67,3 +60,13 @@ With this information we tried the key `DFLVA`
 At this point our suspects were right and the `origgn` word matched almost perfectly so we did one more subtitution of the `g` for `i` obtaining `Y`.
 
 The key now was `DFLVY` and we could defenitly see the plain text declaring this as completed
+
+<!-- All the cipher texts were decrypted with help of a `match` function and the words.txt file -->
+
+___
+# Monoalphabetic decryptor
+
+Reference for the 3000 most used words in english:
+
+https://www.ef.com/wwen/english-resources/english-vocabulary/top-3000-words/
+

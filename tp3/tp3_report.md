@@ -1,5 +1,12 @@
 # TP3 Report
 
+|        |             |
+|:------:|:-----------:|
+| A85272 | Jorge Mota  |
+| A83840 | Maria Silva |
+
+___
+
 This work has the objective to encrypt an image with both modes <ins>ECB</ins> and <ins>CBC</ins> and compare the visual result.
 
 For that we created a python script to easily encrypt and decrypt images using these modes.
@@ -32,7 +39,7 @@ And the decryption was successful.
 
 ## Using CBC
 
-As we can see by the results the CBC encryption mode turns the encrypted image in a matriz of complete unreadable pixels.
+As we can see by the results the CBC encryption mode turns the encrypted image in a matrix of complete unreadable pixels.
 
 ![img4](https://i.imgur.com/ueSYdX1.png)
 

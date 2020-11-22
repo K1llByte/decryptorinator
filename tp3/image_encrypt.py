@@ -15,8 +15,11 @@ def enc_image(filename, dest_file, key, mode):
     bytes = None
     # Open target file in binary mode only for read
     with open(filename,'rb') as img:
+        # Read image bytes
         bytes = img.read()
+        # Add padding bytes with value 0
         bytes += (KEY_SIZE - (len(bytes) % KEY_SIZE))*b'\x00'
+        # Encrypt bytes
         enc = encryptor.update(bytes) + encryptor.finalize()
 
     # Create a new file with the encrypted content
@@ -31,7 +34,9 @@ def dec_image(filename, dest_file, key, mode):
     bytes = None
     # Open target file in binary mode only for read
     with open(filename,'rb') as img:
+        # Read image bytes
         bytes = img.read()
+        # Decrypt bytes
         dec = decryptor.update(bytes) + decryptor.finalize()
 
     # Create a new file with the decrypted content

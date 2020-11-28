@@ -57,9 +57,13 @@ The positive of -5 is 26-5 = 21
 
 With this information we tried the key `DFLVA`
 
-At this point our suspects were right and the `origgn` word matched almost perfectly so we did one more subtitution of the `g` for `i` obtaining `Y`.
+At this point our suspects were right and the `origgn` word matched almost perfectly so we did
+ one more subtitution of the `g` for `i` obtaining `Y`.
 
-The key now was `DFLVY` and we could defenitly see the plain text declaring this as completed
+The key now was `DFLVY` and we could defenitly see the plain text.
+
+The only detail left was the text wasn't fully decrypted so we removed 2 newlines from the ciphertext
+ and all plain text was visible, declaring this as completed
 
 <!-- All the cipher texts were decrypted with help of a `match` function and the words.txt file -->
 

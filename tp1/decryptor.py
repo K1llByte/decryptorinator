@@ -127,15 +127,10 @@ def vigenere_decode(txt):
             tmp = ord(c)
             if tmp >= 65 and tmp <= 90:
                 res += rot_char(c,key[i],True)
-                i += 1
-            elif c != '\n':
-                res += c
-                i += 1
             else:
-                res += '\n'
-                i += 1
+                res += c
             
-            #i += 1
+            i += 1
             if len(key) <= i:
                 i = 0
         return res

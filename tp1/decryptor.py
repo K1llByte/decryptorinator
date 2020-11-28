@@ -3,9 +3,13 @@
 import re
 import random
 
+###################### Auxiliar ######################
+
 def text_of(filename):
     with open(filename,'r') as fp:
         return fp.read()
+
+############ Monoalphabetic Substitution #############
 
 def swap_letters(txt,kl={}):
     res = ""
@@ -78,13 +82,13 @@ def mono_decoder_aux(txt):
 def mono_decoder(txt,kl={}):
     known_letters = kl
 
+    # Checks if any character is uppercase
     def is_decrypted(txt):
         for c in txt:
             c = ord(c)
             if c >= 65 and c <= 90:
                 return False
         return True
-
 
     txt = swap_letters(txt,kl=known_letters)
     while not is_decrypted(txt):
@@ -96,7 +100,6 @@ def mono_decoder(txt,kl={}):
     return txt
 
 ###################### Vigenère ######################
-
 
 
 def rot_char(char,key_char,inverse=False):
@@ -231,7 +234,9 @@ if __name__ == '__main__':
     # print(plaintext)
 
     # Vigenere (AOD)
-    print(vigenere_decode(text_of('cryptogram1.txt')))
+    #print(vigenere_decode(text_of('cryptogram1.txt')))
+
+    print(match('...'))
 
     
 

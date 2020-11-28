@@ -30,40 +30,8 @@ This function receives a <ins>ciphertext</ins> (in uppercase) and <ins>optionall
 mono_decoder(txt,kl={})
 ```
 
-This implementations follows a simple algorithm:
-
-**1.** Swap letters in `txt` with the `known_letters` map (this will increase the confidence in the results)
-
-**2.** While text is not fully decrypted
-
-**2.1.** Find [confidence](#Confidence) and [matches](#Match) for every word with any uppercase letter
-
-**2.2.** Select the word with max [confidence](#Confidence)
-
-**2.3.** Extract the word selected letters to the known_letters map
-
-There's a catch to this algorithm, the results can go very wrong due to two main factors:
-
-- The words file (`words.txt`) could contain insuficient significant words
-- Confidence probability could be low in the
-
-In execution the algorithm can throw an Exception if it can't make any match, if that happens, then that decryption iteration is <ins>unviable</ins>. 
-
-If the user has any hint of known letters it should be inserted in the `known_letters` map, example:
-
-```
-> known_letters = {
-    'J':'t', # Assuming: JHA -> the, JGG -> too
-    'G':'o', # Assuming: JHA -> the, JGG -> too
-    'A':'e', # Assuming: JHA -> the, JGG -> too
-    'H':'h', # Assuming: JHA -> the, JGG -> too
-    'S':'i', # Hinted by the letter frequency swap
-}
-> mono_decoder(ciphertext,kl=known_letters)
-
-```
-
-This will <ins>reduce execution time</ins>, and improve results due to <ins>increased confidence values</ins>.
+___
+### Important terms:
 
 #### **Confidence**
 
@@ -123,13 +91,91 @@ known_letters = {
     'P':'k',
 }
 ```
+___
+
+### <ins>Algorithm</ins>
+This implementations follows a simple algorithm:
+
+**1.** Swap letters in `txt` with the `known_letters` map (this will increase the confidence in the results)
+
+**2.** While text is not fully decrypted
+
+**2.1.** Find [confidence](#Confidence) and [matches](#Match) for every word with any uppercase letter
+
+**2.2.** Select the word with max [confidence](#Confidence)
+
+**2.3.** Extract the word selected letters to the known_letters map
+
+There's a catch to this algorithm, the results can go very wrong due to two main factors:
+
+- The words file (`words.txt`) could contain insuficient significant words
+- Confidence probability could be low in the
+
+### <ins>Alternative endings</ins>
+In execution the algorithm can throw an Exception if it can't make any match, if that happens, then that decryption iteration is <ins>unviable</ins>. 
+
+### <ins>Hints</ins>
+If the user has any hint of known letters it should be inserted in the `known_letters` map, example:
+
+```
+> known_letters = {
+    'J':'t', # Assuming: JHA -> the, JGG -> too
+    'G':'o', # Assuming: JHA -> the, JGG -> too
+    'A':'e', # Assuming: JHA -> the, JGG -> too
+    'H':'h', # Assuming: JHA -> the, JGG -> too
+    'S':'i', # Hinted by the letter frequency swap
+}
+> mono_decoder(ciphertext,kl=known_letters)
+
+```
+
+This will <ins>reduce execution time</ins>, and improve results due to <ins>increased confidence values</ins>.
+
+
 
 ___
 ## Ciphertext #1
 
 
+The Vigenere cipher was a little harder and lucky to decipher "manually".
+
+The inicial take for the cipher was to assume that 
+the inicial `WMP` was a `THE`, this was just a hint because it could be other words.
+
+To make the `WMP` become a `THE` we subtractred the characters to obtain the key for that substitution that was `DFL`
+
+Decrypting the text with vigénere with only the key `DFL`,
+at first sight we can capture the presence of the word `our` in the first sentence, this could be a coincidence, but we assumed not.
+
+The next step we thought was to extend the key with `A`'s to see if any word could be deduced, with 2 `A`'s the result wasn't clear 
+but we could defenitly have hints of what words could be in the text, such as `oribgn` for `origin`, `whei` for `when`, `of` ...
+
+___
+'n' + {value} = 'i'
+
+i = 8
+
+n = 13
+
+value = 13-8 = -5
+
+The positive of -5 is 26-5 = 21
+
+21 is the letter `V`
+___
+
+With this information we tried the key `DFLVA`
+
+At this point our suspects were right and the `origgn` word matched almost perfectly so we did
+ one more subtitution of the `g` for `i` obtaining `Y`.
+
+The key now was `DFLVY` and we could defenitly see the plain text.
+
+The only detail left was the text wasn't fully decrypted so we removed 2 newlines from the ciphertext
+and all plain text was visible, declaring this as completed
 
 
-## Conclusion
+
+## Final Notes
 
 We also wanted to note that we made a letter frequency attack and tried to swap letters with most used letters in english alphabet, but the results were inconclusive

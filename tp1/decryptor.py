@@ -194,7 +194,7 @@ if __name__ == '__main__':
         #'O':'k' # manOind -> mankind
     }
 
-    known_letters = {
+    c3_kl = {
         #'G':'t',
         #'U':'a', # thUt -> that
         #'V':'s', # haV -> has
@@ -219,24 +219,17 @@ if __name__ == '__main__':
         #'P':'k', # liPe -> like
     }
 
-    # ciphertext = text_of('cryptogram2.txt')
-    # #mixtext = swap_letters(ciphertext,kl=known_letters)
-    # plaintext = ""
-    # try:
-    #     plaintext = mono_decoder(ciphertext,kl=c2_kl)
-    # except Exception as e:
-    #     print(e)
-
-    # TODO: Decryption Accuracy rate value with
-    # matching the words in plaintext with the 
-    # words in the words file 
-
-    # print(plaintext)
+    ciphertext = text_of('cryptogram3.txt')
+    plaintext = ""
+    try:
+        plaintext = mono_decoder(ciphertext,kl=c3_kl)
+        print('--------------------------------------------')
+        print(plaintext)
+    except Exception as e:
+        print("ERROR:",e)
 
     # Vigenere (AOD)
     #print(vigenere_decode(text_of('cryptogram1.txt')))
-
-    print(match('...'))
 
     
 

@@ -13,11 +13,11 @@ The decrypted results are in the files `plaintext1.txt`, `plaintext2.txt` and `p
 
 The ciphertexts are in uppercase characters and plaintexts in lowercase.
 
-This ciphertexts were encrypted with _affine_ , _monoalphatic substitution_ and _Vigenère_ (not respectively). Alhtough we didn't know which method of encryption was aplied in order, we deduced that the first one wasn't the _Vigenère_, because there was a lot of texts and too few patterns for 3 letter words.
+This ciphertexts were encrypted with _affine_ , _monoalphabetic substitution_ and _Vigenère_ (not respectively). Alhtough we didn't know which method of encryption was aplied in order, we deduced that the first one wasn't the _Vigenère_, because there was a lot of texts and too few patterns for 3 letter words.
 
 With this we could try to first find the _affine_ ciphertext since its the easist one to get the key (only 2 numbers obtained from systems of equations with modular aritmethic). 
 
-But instead we decided to decypher the _affine_ and the _monoalphatic substitution_ at the same time , since the _affine_ is a type of _monoalphatic substitution_.
+But instead we decided to decypher the _affine_ and the _monoalphabetic substitution_ at the same time , since the _affine_ is a type of _monoalphabetic substitution_.
 
 ___
 ## Ciphertext #2 & #3
@@ -34,11 +34,36 @@ This implementations follows a simple algorithm:
 
 **1.** Swap letters in `txt` with the `known_letters` map (this will increase the confidence in the results)
 
-**2.** While is text not fully decrypted
+**2.** While text is not fully decrypted
 
-**2.1.** Find [confidence](#Confidence) and [matches](#Match) for every word
-**2.2.** Select the word with max confidence value
+**2.1.** Find [confidence](#Confidence) and [matches](#Match) for every word with any uppercase letter
 
+**2.2.** Select the word with max [confidence](#Confidence)
+
+**2.3.** Extract the word selected letters to the known_letters map
+
+There's a catch to this algorithm, the results can go very wrong due to two main factors:
+
+- The words file (`words.txt`) could contain insuficient significant words
+- Confidence probability could be low in the
+
+In execution the algorithm can throw an Exception if it can't make any match, if that happens, then that decryption iteration is <ins>unviable</ins>. 
+
+If the user has any hint of known letters it should be inserted in the `known_letters` map, example:
+
+```
+> known_letters = {
+    'J':'t', # Assuming: JHA -> the, JGG -> too
+    'G':'o', # Assuming: JHA -> the, JGG -> too
+    'A':'e', # Assuming: JHA -> the, JGG -> too
+    'H':'h', # Assuming: JHA -> the, JGG -> too
+    'S':'i', # Hinted by the letter frequency swap
+}
+> mono_decoder(ciphertext,kl=known_letters)
+
+```
+
+This will <ins>reduce execution time</ins>, and improve results due to <ins>increased confidence values</ins>.
 
 #### **Confidence**
 
@@ -105,11 +130,6 @@ ___
 
 
 
-___
-<!-- Auxiliar -->
-<!--
-The results of this method aren't insured due to two factors:
+## Conclusion
 
-- The words file (`words.txt`) could contain insuficient significant words
-- Confidence probability could be low in the
--->
+We also wanted to note that we made a letter frequency attack and tried to swap letters with most used letters in english alphabet, but the results were inconclusive

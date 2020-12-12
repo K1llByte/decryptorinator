@@ -51,7 +51,7 @@ def eam():
 def mte():
     mac = get_mac(msg.encode('utf-8'), HMAC_KEY)
     data["encrypted"] = enc_bytes(msg.encode('utf-8')+mac, KEY, data["nonce"])
-
+    
     w2f("dados-mte.dat", data)
 
 ####################################

@@ -23,15 +23,12 @@ In this *One Time Pad*, instead of XOR of the bytes, the operation was oriented 
 
 With 20 ciphertexts we wanted to find any direct relation between 2 texts, for this we first tried to subtract ciphertext1 (c1) and ciphertext2 (c2) (for every possible pair in the 20 texts).
 
-```
+<pre><code>
 c1: ciphertext 1
 c2: ciphertext 2
-
 t1: plaintext 1
 t2: plaintext 2
-
 k: reused key
-
 k1: random key 1
 k2: random key 2
 
@@ -42,7 +39,8 @@ c2 = t2 + k                     c2 = t2 + k2
 
 c2 - c1 = (t2 + k) - (t1 + k)   c2 - c1 = (t2 + k2) - (t1 + k1)
 c2 - c1 = (t2 - t1)             c2 - c1 = (t2 - t1) + (k2 - k1)
-```
+</code></pre>
+
 As we can see with same keys the subtraction of the ciphertexts cancel the addition of the keys and the result is only the diference between texts 1 and 2.
 
 On the other hand, the subtraction of ciphers with random keys results in the difference between texts 1 and 2, and the additional subtraction of random keys. This is a randomness feeder for the end result.
@@ -70,7 +68,7 @@ Finally we tested this with python code to count letter `A` occurrences to verif
 
 ### **Results**
 
-```
+<pre><code>
 $ python main.py | sort
 . . .
 231 (15,20):
@@ -80,7 +78,7 @@ $ python main.py | sort
 248 (3,14):
 371 (6,14):
 Highest: (6, 14, 371)
-```
+</pre></code>
 
 Analyzing the results we can verify that the subtraction of ciphertexts **6** and **14** had more `A` occurrences than any other ciphertexts combinations and thus making us believe that these were the two that were encrypted with the same key.
 

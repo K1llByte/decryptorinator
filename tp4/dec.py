@@ -1,19 +1,22 @@
 #!/usr/bin/python
 
 import os, sys
-
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from cryptography.hazmat.primitives import hashes, hmac
 # Gerar dois arrays (diferentes!!) de bytes de tamanhos adequados, a utilizar
 # como chave para a cifra e para o mac. Estes valores deverão estar hardcoded em
 # ambos ficheiros enc.py e dec.py.
 KEY = b'\xa7\xdcrc6o\t\xcf\x0co\xbe}Sb\xc3\xcf\xe5\x88\xa8\xb6H\xcfry1\xdfQ\x85K"\xf5|' # 32 bytes
 HMAC_KEY = b'\x94\x0e\x9d[R\\\xfb\xf5\x9aU\xeeb\xf6!s\xd7\xd4\xfb\xfeL\x02s\xc6\xdb\xeb\xf6r\xff1\xa9\xf8\xfc' # 32 bytes
 
+data = {}
+
 def rff(file_name):
     # File structure:
     # NONCE{16b}:ENCRYPTED:EOF
     with open(file_name, 'rb') as f:
-        data.nonce = f.read(16)
-        data.encrypted = f.read()
+        data["nonce"] = f.read(16)
+        data["encrypted"] = f.read()
         return data
 
 def dec_bytes(ciphertext, key, nonce):
@@ -29,20 +32,20 @@ def verify_mac(msg_bytes, mac_bytes, key):
 ######## Decryption Schemes ########
 def etm():
     data = rff("dados-etm.dat")
-    mac = data.encrypted[-32:]
-    ciphertext = data.encrypted[:-32]
+    mac = data["encrypted"][-32:]
+    ciphertext = data["encrypted"][:-32]
     try:
         verify_mac(ciphertext, mac, HMAC_KEY)
-        plaintext = dec_bytes(ciphertext, KEY, data.nonce)
+        plaintext = dec_bytes(ciphertext, KEY, data["nonce"])
         print(plaintext.decode('utf-8'))
     except:
         print('Could not verify data integrity')
 
 def eam():
     data = rff("dados-eam.dat")
-    mac = data.encrypted[-32:]
-    ciphertext = data.encrypted[:-32]
-    plaintext = dec_bytes(ciphertext, KEY, data.nonce)
+    mac = data["encrypted"][-32:]
+    ciphertext = data["encrypted"][:-32]
+    plaintext = dec_bytes(ciphertext, KEY, data["nonce"])
     try:
         verify_mac(plaintext, mac, HMAC_KEY)
         print(plaintext.decode('utf-8'))
@@ -51,7 +54,7 @@ def eam():
 
 def mte():
     data = rff("dados-mte.dat")
-    plaintext_mac = dec_bytes(data.encrypted, KEY, data.nonce)
+    plaintext_mac = dec_bytes(data["encrypted"], KEY, data["nonce"])
     mac = plaintext_mac[-32:]
     plaintext = plaintext_mac[:-32]
     try:

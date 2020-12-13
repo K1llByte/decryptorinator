@@ -7,22 +7,22 @@ AES_BLOCK_LENGTH = 16 # bytes
 AES_KEY_LENGTH = 32 # bytes
 
 # Insecure CBCMAC
-def cbcmac(key, msg):
+def cbcmac(key, msg, iv):
     if not _validate_key_and_msg(key, msg):
         return False
     
-    iv = b'\x00' * 16
+    #iv = b'\x00' * 16
     cipher = Cipher(algorithms.AES(key), modes.CBC(iv))
     encryptor = cipher.encryptor()
     tag = encryptor.update(msg) + encryptor.finalize()
     
     return tag[-5:]
 
-def verify(key, msg, tag):
+def verify(key, msg, tag, iv):
     if not _validate_key_and_msg(key, msg):
         return False
 
-    new_tag = cbcmac(key, msg)
+    new_tag = cbcmac(key, msg, iv)
     return new_tag == tag
     # If parameters are valid, then recalculate the mac.
     # Implement this recalculation.
@@ -30,24 +30,22 @@ def verify(key, msg, tag):
     # return True/False
 
 
-# Receives a pair consisting of a message, and a valid tag.
-# Outputs a forged pair (message, tag), where message must be different from the
-# received message (msg).
-# ---> Note that the key CANNOT be used here! <---
-def produce_forgery(msg, tag):
-    pass
-    # Implement a forgery, that is, produce a new pair (m, t) that fools the
-    # verifier.
+# Forges a new message with the same tag for the given iv
+# The new message's first block is xor'd with the iv used 
+# to calculate the tag, and the new iv is going to be zeros 
+def produce_forgery(msg, iv, tag):
+    new_msg = bytes([_a ^ _b for _a, _b in zip(iv, msg[:AES_BLOCK_LENGTH])]) + msg[AES_BLOCK_LENGTH:]
+    new_tag = tag
+    new_iv = b'\x00' * 16
+    return (new_msg, new_iv, new_tag)
 
-    # return (new_msg, new_tag)
-
-def check_forgery(key, new_msg, new_tag, original_msg):
+def check_forgery(key, new_msg, new_iv, new_tag, original_msg):
     if new_msg == original_msg:
         print("Having the \"forged\" message equal to the original " +
             "one is not allowed...")
         return False
 
-    if verify(key, new_msg, new_tag) == True:
+    if verify(key, new_msg, new_tag, new_iv) == True:
         print("MAC successfully forged!")
         return True
     else:
@@ -70,18 +68,19 @@ def _validate_key_and_msg(key, msg):
     return True
 
 def main():
-  key = os.urandom(AES_KEY_LENGTH)
-  msg = os.urandom(32)
+    key = os.urandom(AES_KEY_LENGTH)
+    msg = os.urandom(32)
+    iv = os.urandom(16)
 
-  tag = cbcmac(key, msg)
+    tag = cbcmac(key, msg, iv)
 
-  # Should print "True".
-  print(verify(key, msg, tag))
+    # Should print "True".
+    print(verify(key, msg, tag, iv))
 
-  #(mprime, tprime) = produce_forgery(msg, tag)
+    (mprime, ivprime, tprime) = produce_forgery(msg, iv, tag)
 
-  # GOAL: produce a (message, tag) that fools the verifier.
-  #check_forgery(key, mprime, tprime, msg)
+    # GOAL: produce a (message, tag) that fools the verifier.
+    check_forgery(key, mprime, ivprime, tprime, msg)
 
 if __name__ == '__main__':
-  main()
+    main()

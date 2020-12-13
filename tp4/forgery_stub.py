@@ -24,19 +24,22 @@ def verify(key, msg, tag, iv):
 
     new_tag = cbcmac(key, msg, iv)
     return new_tag == tag
-    # If parameters are valid, then recalculate the mac.
-    # Implement this recalculation.
-
-    # return True/False
 
 
 # Forges a new message with the same tag for the given iv
 # The new message's first block is xor'd with the iv used 
 # to calculate the tag, and the new iv is going to be zeros 
 def produce_forgery(msg, iv, tag):
-    new_msg = bytes([_a ^ _b for _a, _b in zip(iv, msg[:AES_BLOCK_LENGTH])]) + msg[AES_BLOCK_LENGTH:]
+    def bytes_xor(a,b):
+        return bytes([_a ^ _b for _a, _b in zip(a, b)])
+    
+    new_msg = bytes_xor(iv, msg[:AES_BLOCK_LENGTH]) + msg[AES_BLOCK_LENGTH:]
     new_tag = tag
     new_iv = b'\x00' * 16
+    
+    # Code in case we want to insert a custom 16 bytes message in the first block
+    #new_msg = b'1234567890123456' + msg[AES_BLOCK_LENGTH:]
+    #new_iv = bytes_xor(bytes_xor(iv, msg[:AES_BLOCK_LENGTH]), b'1234567890123456')
     return (new_msg, new_iv, new_tag)
 
 def check_forgery(key, new_msg, new_iv, new_tag, original_msg):
@@ -79,6 +82,7 @@ def main():
 
     (mprime, ivprime, tprime) = produce_forgery(msg, iv, tag)
 
+    print(mprime)
     # GOAL: produce a (message, tag) that fools the verifier.
     check_forgery(key, mprime, ivprime, tprime, msg)
 

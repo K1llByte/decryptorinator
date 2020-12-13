@@ -29,7 +29,7 @@ def get_mac(text_bytes, key):
     h.update(text_bytes)
     return h.finalize()
 
-######## Excryption Schemes ########
+######## Encryption Schemes ########
 
 # Encrypt Then MAC
 def etm():

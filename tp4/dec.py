@@ -19,17 +19,20 @@ def rff(file_name):
         data["encrypted"] = f.read()
         return data
 
+# Decrypt bytes using ChaCha20
 def dec_bytes(ciphertext, key, nonce):
     cipher = Cipher(algorithms.ChaCha20(key, nonce), mode=None)
     plaintext = cipher.decryptor().update(ciphertext)
     return plaintext
 
+# Verify the validation of the mac to the text
 def verify_mac(msg_bytes, mac_bytes, key):
     h = hmac.HMAC(key, hashes.SHA256())
     h.update(msg_bytes)
     h.verify(mac_bytes)
 
 ######## Decryption Schemes ########
+# Encrypt Then MAC
 def etm():
     data = rff("dados-etm.dat")
     mac = data["encrypted"][-32:]
@@ -41,6 +44,7 @@ def etm():
     except:
         print('Could not verify data integrity')
 
+# Encrypt And MAC
 def eam():
     data = rff("dados-eam.dat")
     mac = data["encrypted"][-32:]
@@ -52,6 +56,7 @@ def eam():
     except:
         print('Could not verify data integrity')
 
+# MAC Then Encrypt 
 def mte():
     data = rff("dados-mte.dat")
     plaintext_mac = dec_bytes(data["encrypted"], KEY, data["nonce"])

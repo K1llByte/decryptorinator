@@ -17,7 +17,7 @@ data["nonce"] = os.urandom(16)
 # This message is considered to be always with utf-8 encoding
 msg = "Isto é uma mensagem não muito secreta!"
 
-# Encrypt using ChaCha20 the text
+# Encrypt bytes using ChaCha20
 def enc_bytes(plaintext_bytes,key,nonce):
     cipher = Cipher(algorithms.ChaCha20(key, nonce), mode=None)
     ciphertext = cipher.encryptor().update(plaintext_bytes)

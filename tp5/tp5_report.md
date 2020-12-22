@@ -11,9 +11,13 @@ ___
 
 In this part we had to solve 2 systems of congruences a) and b)
 
-**Note:** We'll consider the defenition of a function `gcd(a,b)` that gives the <ins>greater common divisor</ins> of two values *a* and *b*.
+**Notes:** 
 
-The congruencies will be conversible to equations in the form:
+- We'll consider the defenition of a function `gcd(a,b)` that gives the <ins>greater common divisor</ins> of two values *a* and *b*.
+
+- *k*,*l* and *m* are positive integers
+
+The congruences will be conversible to equations in the form:
 
 `X ≣ a (mod b)`  ->  `X = b*k + a` , *k* being an positive integer
 
@@ -27,7 +31,7 @@ The congruencies will be conversible to equations in the form:
 
 Firstly we begin with the congruency with largest modulus that is (3) `X ≣ 39 (mod 27)` 
 
-Then we substitute this congruencies expression for *X* into the congruence with the next largest modulus (2):
+Then we substitute this congruences expression for *X* into the congruence with the next largest modulus (2):
 
 ```
 27*m + 39 ≣ 57 (mod 23)
@@ -85,13 +89,59 @@ l ≣ 11 (mod 13)
 ```
 
 Finally we replace this in the expression obtained previously and get the solution 
+
 ```
-X ≣ 7302 (mod 8073)
+X = 621*(13*m + 11) + 471
+
+X = 8073*m + 7302
 
 X = 7302
-
 ```
 
+The smallest solution for this system is <ins>7302</ins>
+
 ### **b )**
+
+For the second system the congruences we first simplified the each one to remove the coefficient 
+
+```
+19*X ≣ 21 (mod 16)
+37*X ≣ 100 (mod 15)
+```
+
+Solving this Linear Congruences ...
+
+```
+(1): X ≣ 7 (mod 16)
+(2): X ≣ 10 (mod 15)
+```
+
+With the same intension as before, we begin with the congruency with largest modulus that is (1) `X ≣ 7 (mod 16)`
+
+Then we substitute this congruences expression for X into the congruence with the next largest modulus (2):
+
+```
+16*k + 7 ≣ 10 (mod 15)
+```
+
+Solving this Linear Congruence ...
+
+```
+k ≣ 3 (mod 15)
+
+k = 15*l + 3
+```
+
+Replacing the expression form of this result in the expression for X we get:
+
+```
+X = 16*(15*l + 3) + 7
+
+X = 240*l + 55
+
+X = 55
+```
+
+The smallest solution for this system is <ins>55</ins>
 
 ## Second Part

@@ -17,17 +17,17 @@ In this part we had to solve 2 systems of congruences a) and b)
 
 - *k*,*l* and *m* are positive integers
 
-The congruences will be conversible to equations in the form:
+- The congruences will be conversible to equations in the form:
 
 `X ≣ a (mod b)`  ->  `X = b*k + a` , *k* being an positive integer
 
 ### **a )**
 
-```
+<pre><code>
 (1): X ≣ 48 (mod 13)
 (2): X ≣ 57 (mod 23)
 (3): X ≣ 39 (mod 27)
-```
+</code></pre>
 
 Firstly we begin with the congruency with largest modulus that is (3) `X ≣ 39 (mod 27)` 
 
@@ -143,5 +143,6 @@ X = 55
 ```
 
 The smallest solution for this system is <ins>55</ins>
-
+___
 ## Second Part
+

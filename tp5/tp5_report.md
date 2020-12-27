@@ -148,7 +148,7 @@ ___
 
 For this part we had the objective to decrypt a cipher which was encrypted with RSA with e = 17 and n = 213271, beyond this, the ciphered integer was a result of an encoding of three letters in a row in the form:
 
-![](imgs/encoding.png)
+![](https://i.imgur.com/xgx1JHZ.png)
 
 For this encoding we developd two functions to make conversions in this scheme:
 

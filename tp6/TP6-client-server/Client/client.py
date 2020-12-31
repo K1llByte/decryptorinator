@@ -40,10 +40,10 @@ port = 8080
 
 # RFC 3526's parameters. Easier to hardcode...
 p = 0xFFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD129024E088A67CC74020BBEA63B139B22514A08798E3404DDEF9519B3CD3A431B302B0A6DF25F14374FE1356D6D51C245E485B576625E7EC6F44C42E9A637ED6B0BFF5CB6F406B7EDEE386BFB5A899FA5AE9F24117C4B1FE649286651ECE45B3DC2007CB8A163BF0598DA48361C55D39A69163FA8FD24CF5F83655D23DCA3AD961C62F356208552BB9ED529077096966D670C354E4ABC9804F1746C08CA18217C32905E462E36CE3BE39E772C180E86039B2783A2EC07A28FB5C55DF06F4C52C9DE2BCBF6955817183995497CEA956AE515D2261898FA051015728E5A8AACAA68FFFFFFFFFFFFFFFF
-p_size = 256
 g = 2
 params_numbers = dh.DHParameterNumbers(p,g)
 parameters = params_numbers.parameters()
+
 
 def connect():
     #Attempt connection to server
@@ -82,31 +82,35 @@ def decrypt(k, c):
     return pt
 
 def handshake(socket):
-    a = random.randrange(0,100000)
-    A = pow(g,a,p)
-    #print("> Gonna send A")
-    A = A.to_bytes(p_size, byteorder='little')
-    #print("tmp:",tmp)
-    socket.sendall(A)
-    #print("> Sent A")
+    dh_x = parameters.generate_private_key()
+    dh_g_x = dh_x.public_key()
+    dh_g_x_as_bytes = dh_g_x.public_bytes( \
+        Encoding.PEM, PublicFormat.SubjectPublicKeyInfo)
 
-    B = None
+    print("Client Public Key:",dh_g_x)
+    print("Client Public Key Bytes:",dh_g_x_as_bytes)
+    socket.sendall(dh_g_x_as_bytes)
+    
     try:
         #print("> Gonna receive B")
-        B = socket.recv(SOCKET_READ_BLOCK_LEN)
-        B = int.from_bytes(B, byteorder='little')
+        dh_g_y_as_bytes = socket.recv(SOCKET_READ_BLOCK_LEN)
+        dh_g_y = load_pem_public_key(dh_g_y_as_bytes)
+        print("Contructor result:",dh_g_y)
         #print("> Received B")
     except:
         print("Something went wrong during handshake ...")
         return None
     
-    s = pow(B,a,p)
-    #print("computed s")
-    tmp = s.to_bytes(p_size, byteorder='little')
-    print(p_size)
-    print("size:",sys.getsizeof(tmp))
-    print(tmp)
-    return tmp
+    shared_key = dh_x.exchange(dh_g_y)
+    
+    derived_key = HKDF(
+        algorithm=hashes.SHA256(),
+        length=32,
+        salt=None,
+        info=None,
+    ).derive(shared_key)
+    print("> Finished")
+    return derived_key
 
     #return "some random key" # change this...
 

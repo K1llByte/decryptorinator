@@ -32,7 +32,6 @@ total_connections = 0
 
 # RFC 3526's parameters. Easier to hardcode...
 p = 0xFFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD129024E088A67CC74020BBEA63B139B22514A08798E3404DDEF9519B3CD3A431B302B0A6DF25F14374FE1356D6D51C245E485B576625E7EC6F44C42E9A637ED6B0BFF5CB6F406B7EDEE386BFB5A899FA5AE9F24117C4B1FE649286651ECE45B3DC2007CB8A163BF0598DA48361C55D39A69163FA8FD24CF5F83655D23DCA3AD961C62F356208552BB9ED529077096966D670C354E4ABC9804F1746C08CA18217C32905E462E36CE3BE39E772C180E86039B2783A2EC07A28FB5C55DF06F4C52C9DE2BCBF6955817183995497CEA956AE515D2261898FA051015728E5A8AACAA68FFFFFFFFFFFFFFFF
-p_size = 256
 g = 2
 params_numbers = dh.DHParameterNumbers(p,g)
 parameters = params_numbers.parameters()
@@ -42,10 +41,12 @@ AES_KEY_LEN = 32 # bytes
 PKCS7_BIT_LEN = 128 # bits
 SOCKET_READ_BLOCK_LEN = 4096 # bytes
 
+
 def signal_handler(sig, frame):
     print('You pressed Ctrl+C; bye...')
     sys.exit(0)
 signal.signal(signal.SIGINT, signal_handler)
+
 
 class Client(threading.Thread):
     def __init__(self, socket, address, id, name):
@@ -79,17 +80,18 @@ class Client(threading.Thread):
             self.certificate_as_bytes = cert_file.read()
             cert = load_pem_x509_certificate(self.certificate_as_bytes)
             self.public_key = cert.public_key()
+            print("self.public_key:",self.public_key)
   
         self.client_certificate = None
         self.client_public_key = None
-    
+
+
     def __str__(self):
         return str(self.id) + " " + str(self.address)
 
+
     # Receives and returns bytes.
     def encrypt(self, m):
-        #return m # delete this...
-
         padder = padding.PKCS7(PKCS7_BIT_LEN).padder()
         padded_data = padder.update(m) + padder.finalize()
         iv = os.urandom(AES_BLOCK_LEN)
@@ -98,6 +100,7 @@ class Client(threading.Thread):
 
         ct = encryptor.update(padded_data) + encryptor.finalize()
         return iv+ct
+
 
     # Receives and returns bytes.
     def decrypt(self, c):
@@ -111,35 +114,38 @@ class Client(threading.Thread):
         pt = unpadder.update(pt) + unpadder.finalize()
         return pt
 
+
     def handshake(self, debug = False):
-        # You can print debug messages as:
-        # debug and print("some debug message")
-        # This way, they are easy to enable/disable, without needing to
-        # comment/uncomment lines of code...
-        #print('modulos:',p)
-        b = random.randrange(0,100000)
+        self.dh_y = parameters.generate_private_key()
+        self.dh_g_y = self.dh_y.public_key()
+        self.dh_g_y_as_bytes = self.dh_g_y.public_bytes( \
+            Encoding.PEM, PublicFormat.SubjectPublicKeyInfo)
+
+        print("Server Public Key:",self.dh_g_y)
+        print("Server Public Key Bytes:",self.dh_g_y_as_bytes)
 
         try:
-            #print("> Gonna receive A")
-            A = self.socket.recv(SOCKET_READ_BLOCK_LEN)
-            A = int.from_bytes(A, byteorder='little')
-            #tmp = A
-            #print("> Received A")
+            self.dh_g_x_as_bytes = self.socket.recv(SOCKET_READ_BLOCK_LEN)
+            self.dh_g_x = load_pem_public_key(self.dh_g_x_as_bytes)
+            print("Contructor result:",self.dh_g_x)
         except Exception as e:
             print(e)
             print("Something went wrong during handshake ...")
             return False
 
-        B = pow(g,b,p)
-        #print("> Gonna send B")
-        self.socket.sendall(B.to_bytes(p_size, byteorder='little'))
-        #print("> Sent B")
-
-        s = pow(A,b,p)
-        #print("computed s")
-        self.key = s.to_bytes(p_size, byteorder='little')
-        #print("> Exited")
+        concatenated_bytes = self.dh_g_y_as_bytes + b"\r\n\r\n" + b"\r\n\r\n"
+        self.socket.sendall(self.dh_g_y_as_bytes)
+        
+        shared_key = self.dh_y.exchange(self.dh_g_x)
+        self.key = HKDF(
+            algorithm=hashes.SHA256(),
+            length=32,
+            salt=None,
+            info=None,
+        ).derive(shared_key)
+        print("> Finished")
         return True
+
 
     def run(self):
         print("Going to do handshake for client " + str(self.address) + "... ")
@@ -170,15 +176,18 @@ class Client(threading.Thread):
                 connections.remove(self)
                 break
 
+
     # Message is bytes.
     def sign(self, message):
         pass
         # implement this
 
+
     # m and sig are bytes.
     def verify(self, public_key, m, sig):
         pass
         # implement this
+
 
     # Receives the certificate object (not the bytes).
     def validate_certificate(self, debug = False):
@@ -233,6 +242,7 @@ class Client(threading.Thread):
 
         return True
 
+
 def main():
     # Create new server socket. Set SO_REUSEADDR to avoid annoying "address
     # already in use" errors, when doing Ctrl-C plus rerunning the server.
@@ -250,6 +260,7 @@ def main():
         total_connections += 1
     for t in connections:
         t.join()
-  
+
+
 if __name__ == '__main__':
   main()

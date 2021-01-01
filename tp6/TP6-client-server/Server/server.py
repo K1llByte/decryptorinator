@@ -116,26 +116,49 @@ class Client(threading.Thread):
 
 
     def handshake(self, debug = False):
+        # ============== Handshake Description ============== #
+        # (1) Client -> Server : gx.                          #
+        #    (1.1) Set DH parameters and generate private (y) #
+        #          and exponential (gy).                      #
+        #    (1.2) Receive Client's exponential (gx)          #
+        #          also generated like the server.            #
+        #                                                     #
+        # (2) Client <- Server : gy, CertB, EK(SB(gy, gx)).   #
+        #    (2.1) Compute shared secret key.                 #
+        #    (2.2) Make encrypted signature EK(SB(gy, gx)).   #
+        #        (2.2.1) Concatenate gy and gx (server's      #
+        #                exponential and client's             #
+        #                exponential).                        #
+        #        (2.2.2) Sign gy_gx using server's asymmetric #
+        #                private key B.                       #
+        #        (2.2.3) Encrypt gy_gx using shared key.      #
+        #    (2.3) Concatenate gy, CertB, EK(SB(gy, gx)) and  # 
+        #          send to client.                            #
+        #                                                     #
+        # (3) Client -> Server : CertA, EK(SA(gx, gy)).       #
+        #    (3.1) Receive Client's certificate and encrypted #
+        #          signature.                                 #
+        #    (3.2) Verify certificate validation              #
+        #    (3.3) Verify encrypted signature                 #
+        # =================================================== #
+
+        # (1)
+        # (1.1)
         self.dh_y = parameters.generate_private_key()
         self.dh_g_y = self.dh_y.public_key()
         self.dh_g_y_as_bytes = self.dh_g_y.public_bytes( \
             Encoding.PEM, PublicFormat.SubjectPublicKeyInfo)
 
-        print("Server Public Key:",self.dh_g_y)
-        print("Server Public Key Bytes:",self.dh_g_y_as_bytes)
-
+        # (1.2)
         try:
             self.dh_g_x_as_bytes = self.socket.recv(SOCKET_READ_BLOCK_LEN)
             self.dh_g_x = load_pem_public_key(self.dh_g_x_as_bytes)
-            print("Contructor result:",self.dh_g_x)
         except Exception as e:
-            print(e)
+            #print(e)
             print("Something went wrong during handshake ...")
             return False
 
-        concatenated_bytes = self.dh_g_y_as_bytes + b"\r\n\r\n" + b"\r\n\r\n"
-        self.socket.sendall(self.dh_g_y_as_bytes)
-        
+        # (2.1)
         shared_key = self.dh_y.exchange(self.dh_g_x)
         self.key = HKDF(
             algorithm=hashes.SHA256(),
@@ -143,6 +166,48 @@ class Client(threading.Thread):
             salt=None,
             info=None,
         ).derive(shared_key)
+
+        # (2.2)
+        # (2.2.1)
+        SEPARATOR = b"\r\n\r\n"
+        gy_gx = self.dh_g_y_as_bytes + SEPARATOR + self.dh_g_x_as_bytes
+
+        # (2.2.2) and (2.2.3)
+        signed_and_encrypted = self.encrypt(gy_gx + SEPARATOR + self.sign(gy_gx))
+
+        # (2.3)
+        gy_cert_sae = self.dh_g_y_as_bytes + SEPARATOR + self.certificate_as_bytes + SEPARATOR + signed_and_encrypted
+        self.socket.sendall(gy_cert_sae)
+
+        # (3.1)
+        try:
+            cert_sae = self.socket.recv(SOCKET_READ_BLOCK_LEN)
+        except Exception as e:
+            #print(e)
+            print("Something went wrong during handshake ...")
+            return False
+
+        tmp = cert_sae.split(SEPARATOR)
+        self.client_certificate = load_pem_x509_certificate(tmp[0])
+        self.client_public_key = self.client_certificate.public_key()
+        
+        # (3.2)
+        if not self.validate_certificate():
+            print("Invalid Certificate")
+            return False
+        sae = tmp[1]
+        signed_msg = self.decrypt(sae)
+        tmp = signed_msg.split(SEPARATOR)
+        gx_gy = tmp[0]
+        signature = tmp[1]
+
+        # (3.3)
+        try:
+            self.verify(gx_gy,signature)
+        except:
+            print("Invalid Signature")
+            return False
+
         print("> Finished")
         return True
 
@@ -179,14 +244,22 @@ class Client(threading.Thread):
 
     # Message is bytes.
     def sign(self, message):
-        pass
-        # implement this
+        signature = self.private_key.sign(
+        message,
+        PSS(mgf=MGF1(hashes.SHA256()),
+                salt_length=PSS.MAX_LENGTH),
+        hashes.SHA256())
+        return signature
 
 
-    # m and sig are bytes.
-    def verify(self, public_key, m, sig):
-        pass
-        # implement this
+    # Message and signature bytes.
+    def verify(self, message, signature):
+        self.client_public_key.verify(
+            signature,
+            message,
+            PSS(mgf=MGF1(hashes.SHA256()),
+                    salt_length=PSS.MAX_LENGTH),
+                    hashes.SHA256())
 
 
     # Receives the certificate object (not the bytes).

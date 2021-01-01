@@ -82,33 +82,66 @@ def decrypt(k, c):
     return pt
 
 def handshake(socket):
+    # ============== Handshake Description ============== #
+    # (1) Client -> Server : gx.                          #
+    #    (1.1) Set DH parameters and generate private (x) #
+    #          and exponential (gx).                      #
+    #    (1.2) Send exponential (gx)                      #
+    #                                                     #
+    # (2) Client <- Server : gy, CertB, EK(SB(gy, gx)).   #
+    #    (2.1) Compute shared secret key.                 #
+    #    (2.2) Receive server's exponential, certificate  #
+    #          and encrypted signature                    #
+    #    (2.3) Verify certificate validation              #
+    #    (2.4) Verify encrypted signature                 #
+    #                                                     #
+    # (3) Client -> Server : CertA, EK(SA(gx, gy)).       #
+    #    (3.1) Make encrypted signature EK(SA(gx, gy)).   #
+    #        (3.1.1) Concatenate gx and gy (client's      #
+    #                exponential and server's             #
+    #                exponential).                        #
+    #        (3.1.2) Sign gx_gy using client's asymmetric #
+    #                private key A.                       #
+    #        (3.1.3) Encrypt gx_gy using shared key.      #
+    #    (3.2) Concatenate CertA, EK(SA(gx, gy)) and      #
+    #          send to server.                            #
+    # =================================================== #
+
+    # (1)
+    # (1.1)
     dh_x = parameters.generate_private_key()
     dh_g_x = dh_x.public_key()
     dh_g_x_as_bytes = dh_g_x.public_bytes( \
         Encoding.PEM, PublicFormat.SubjectPublicKeyInfo)
 
-    print("Client Public Key:",dh_g_x)
-    print("Client Public Key Bytes:",dh_g_x_as_bytes)
+    # (1.2)
     socket.sendall(dh_g_x_as_bytes)
-    
-    try:
-        #print("> Gonna receive B")
-        dh_g_y_as_bytes = socket.recv(SOCKET_READ_BLOCK_LEN)
-        dh_g_y = load_pem_public_key(dh_g_y_as_bytes)
-        print("Contructor result:",dh_g_y)
-        #print("> Received B")
-    except:
-        print("Something went wrong during handshake ...")
-        return None
-    
+
+    # (2.1)
     shared_key = dh_x.exchange(dh_g_y)
-    
     derived_key = HKDF(
         algorithm=hashes.SHA256(),
         length=32,
         salt=None,
         info=None,
     ).derive(shared_key)
+
+    # (2.2)
+    SEPARATOR = b"\r\n\r\n"
+    try:
+        gy_cert_sae = socket.recv(SOCKET_READ_BLOCK_LEN)
+    except:
+        print("Something went wrong during handshake ...")
+        return None
+    
+    tmp = gy_cert_sae.split(SEPARATOR)
+    gy = tmp[0]
+    server_certificate = load_pem_x509_certificate(tmp[1])
+    server_public_key = server_certificate.public_key()
+    signed_and_encrypted = tmp[2]
+
+    dh_g_y = load_pem_public_key(dh_g_y_as_bytes)
+
     print("> Finished")
     return derived_key
 
@@ -149,8 +182,8 @@ def sign(private_key, message):
     return signature
 
 # Message and signature bytes.
-def verify(public_key, message, signature):
-    public_key.verify(
+def verify(server_public_key, message, signature):
+    server_public_key.verify(
         signature,
         message,
         PSS(mgf=MGF1(hashes.SHA256()),

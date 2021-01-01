@@ -23,12 +23,14 @@ from cryptography.hazmat.primitives.serialization import load_pem_private_key
 AES_BLOCK_LEN = 16 # bytes
 AES_KEY_LEN = 32 # bytes
 PKCS7_BIT_LEN = 128 # bits
-SOCKET_READ_BLOCK_LEN = 4096 # bytes
+SOCKET_READ_BLOCK_LEN = 6144 # bytes
+
 
 def signal_handler(sig, frame):
     print('You pressed Ctrl+C; bye...')
     sys.exit(0)
 signal.signal(signal.SIGINT, signal_handler)
+
 
 # An useful function to open files in the same dir as script...
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
@@ -45,6 +47,20 @@ params_numbers = dh.DHParameterNumbers(p,g)
 parameters = params_numbers.parameters()
 
 
+private_key = None
+with open(path("TC_Client.key.pem"), "rb") as key_file:
+    private_key = load_pem_private_key(key_file.read(), password=None)
+  
+# Certificate and public key from the server's certificate
+public_key = None
+certificate_as_bytes = None
+with open(path("TC_Client.cert.pem"), "rb") as cert_file:
+    certificate_as_bytes = cert_file.read()
+    cert = load_pem_x509_certificate(certificate_as_bytes)
+    public_key = cert.public_key()
+    #print("public_key:",public_key)
+
+
 def connect():
     #Attempt connection to server
     try:
@@ -55,6 +71,7 @@ def connect():
         print("Could not make a connection to the server: %s" % e)
         input("Press enter to quit")
         sys.exit(0)
+
 
 # Receives and returns bytes.
 def encrypt(k, m):
@@ -69,6 +86,7 @@ def encrypt(k, m):
     ct = encryptor.update(padded_data) + encryptor.finalize()
     return iv+ct
 
+
 # Receives and returns bytes.
 def decrypt(k, c):
     #return c # delete this...
@@ -81,17 +99,18 @@ def decrypt(k, c):
     pt = unpadder.update(pt) + unpadder.finalize()
     return pt
 
+
 def handshake(socket):
-    # ============== Handshake Description ============== #
+    # ========== Client: Handshake Description ========== #
     # (1) Client -> Server : gx.                          #
     #    (1.1) Set DH parameters and generate private (x) #
     #          and exponential (gx).                      #
     #    (1.2) Send exponential (gx)                      #
     #                                                     #
     # (2) Client <- Server : gy, CertB, EK(SB(gy, gx)).   #
-    #    (2.1) Compute shared secret key.                 #
-    #    (2.2) Receive server's exponential, certificate  #
+    #    (2.1) Receive server's exponential, certificate  #
     #          and encrypted signature                    #
+    #    (2.2) Compute shared secret key.                 #
     #    (2.3) Verify certificate validation              #
     #    (2.4) Verify encrypted signature                 #
     #                                                     #
@@ -117,16 +136,9 @@ def handshake(socket):
     # (1.2)
     socket.sendall(dh_g_x_as_bytes)
 
-    # (2.1)
-    shared_key = dh_x.exchange(dh_g_y)
-    derived_key = HKDF(
-        algorithm=hashes.SHA256(),
-        length=32,
-        salt=None,
-        info=None,
-    ).derive(shared_key)
+   
 
-    # (2.2)
+    # (2.1)
     SEPARATOR = b"\r\n\r\n"
     try:
         gy_cert_sae = socket.recv(SOCKET_READ_BLOCK_LEN)
@@ -135,17 +147,56 @@ def handshake(socket):
         return None
     
     tmp = gy_cert_sae.split(SEPARATOR)
-    gy = tmp[0]
+    dh_g_y_as_bytes = tmp[0]
+    dh_g_y = load_pem_public_key(dh_g_y_as_bytes)
     server_certificate = load_pem_x509_certificate(tmp[1])
     server_public_key = server_certificate.public_key()
-    signed_and_encrypted = tmp[2]
+    sae = tmp[2]
+    
+    # (2.2)
+    shared_key = dh_x.exchange(dh_g_y)
+    derived_key = HKDF(
+        algorithm=hashes.SHA256(),
+        length=32,
+        salt=None,
+        info=None,
+    ).derive(shared_key)
+    
+    
+    # (2.3)
+    if not validate_certificate(server_certificate):
+        print("Invalid Certificate")
+        return None
 
-    dh_g_y = load_pem_public_key(dh_g_y_as_bytes)
+    # (2.4)
+    message_and_signature = decrypt(derived_key,sae)
+    tmp2 = message_and_signature.split(SEPARATOR)
+    gy_gx = tmp2[0] + SEPARATOR + tmp2[1]
+    signature = tmp2[2]
 
-    print("> Finished")
+    try:
+        verify(server_public_key,gy_gx,signature)
+    except Exception as e:
+        print(e)
+        print("Invalid Signature")
+        return None
+
+    
+    # (3)
+    # (3.1)
+    # (3.1.1)
+    SEPARATOR = b"\r\n\r\n"
+    gx_gy = dh_g_x_as_bytes + SEPARATOR + dh_g_y_as_bytes
+
+    # (3.1.2) and (3.1.2)
+    signed_and_encrypted = encrypt(derived_key, gx_gy + SEPARATOR + sign(private_key,gx_gy))
+
+    # (3.2)
+    cert_sae = certificate_as_bytes + SEPARATOR + signed_and_encrypted
+    socket.sendall(cert_sae)
+
     return derived_key
 
-    #return "some random key" # change this...
 
 def process(socket):
     print("Going to do handshake... ")
@@ -172,6 +223,7 @@ def process(socket):
             print("You have been disconnected from the server")
             break
 
+
 # Message is bytes.
 def sign(private_key, message):
     signature = private_key.sign(
@@ -181,6 +233,7 @@ def sign(private_key, message):
         hashes.SHA256())
     return signature
 
+
 # Message and signature bytes.
 def verify(server_public_key, message, signature):
     server_public_key.verify(
@@ -189,6 +242,7 @@ def verify(server_public_key, message, signature):
         PSS(mgf=MGF1(hashes.SHA256()),
                 salt_length=PSS.MAX_LENGTH),
                 hashes.SHA256())
+
 
 # Receives the certificate object (not the bytes).
 def validate_certificate(certificate, debug = False):
@@ -240,9 +294,11 @@ def validate_certificate(certificate, debug = False):
         certificate.signature_hash_algorithm)
     return True
 
+
 def main():
     s = connect()
     process(s)
+
 
 if __name__ == '__main__':
   main()

@@ -39,7 +39,7 @@ parameters = params_numbers.parameters()
 AES_BLOCK_LEN = 16 # bytes
 AES_KEY_LEN = 32 # bytes
 PKCS7_BIT_LEN = 128 # bits
-SOCKET_READ_BLOCK_LEN = 4096 # bytes
+SOCKET_READ_BLOCK_LEN = 6144 # bytes
 
 
 def signal_handler(sig, frame):
@@ -80,7 +80,7 @@ class Client(threading.Thread):
             self.certificate_as_bytes = cert_file.read()
             cert = load_pem_x509_certificate(self.certificate_as_bytes)
             self.public_key = cert.public_key()
-            print("self.public_key:",self.public_key)
+            #print("self.public_key:",self.public_key)
   
         self.client_certificate = None
         self.client_public_key = None
@@ -116,7 +116,7 @@ class Client(threading.Thread):
 
 
     def handshake(self, debug = False):
-        # ============== Handshake Description ============== #
+        # ========== Server: Handshake Description ========== #
         # (1) Client -> Server : gx.                          #
         #    (1.1) Set DH parameters and generate private (y) #
         #          and exponential (gy).                      #
@@ -174,16 +174,19 @@ class Client(threading.Thread):
 
         # (2.2.2) and (2.2.3)
         signed_and_encrypted = self.encrypt(gy_gx + SEPARATOR + self.sign(gy_gx))
-
+        
         # (2.3)
         gy_cert_sae = self.dh_g_y_as_bytes + SEPARATOR + self.certificate_as_bytes + SEPARATOR + signed_and_encrypted
+
         self.socket.sendall(gy_cert_sae)
 
         # (3.1)
         try:
             cert_sae = self.socket.recv(SOCKET_READ_BLOCK_LEN)
+            if cert_sae == b'':
+                raise Exception()
         except Exception as e:
-            #print(e)
+            print(e)
             print("Something went wrong during handshake ...")
             return False
 
@@ -198,8 +201,8 @@ class Client(threading.Thread):
         sae = tmp[1]
         signed_msg = self.decrypt(sae)
         tmp = signed_msg.split(SEPARATOR)
-        gx_gy = tmp[0]
-        signature = tmp[1]
+        gx_gy = tmp[0] + SEPARATOR + tmp[1]
+        signature = tmp[2]
 
         # (3.3)
         try:

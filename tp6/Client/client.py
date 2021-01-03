@@ -47,11 +47,12 @@ params_numbers = dh.DHParameterNumbers(p,g)
 parameters = params_numbers.parameters()
 
 
+# Load Client's Private Key
 private_key = None
 with open(path("TC_Client.key.pem"), "rb") as key_file:
     private_key = load_pem_private_key(key_file.read(), password=None)
   
-# Certificate and public key from the server's certificate
+# Load Client's x509 Certificate, Public Key
 public_key = None
 certificate_as_bytes = None
 with open(path("TC_Client.cert.pem"), "rb") as cert_file:
@@ -75,22 +76,17 @@ def connect():
 
 # Receives and returns bytes.
 def encrypt(k, m):
-    #return m # delete this...
-
     padder = padding.PKCS7(PKCS7_BIT_LEN).padder()
     padded_data = padder.update(m) + padder.finalize()
     iv = os.urandom(AES_BLOCK_LEN)
     cipher = Cipher(algorithms.AES(k), modes.CBC(iv))
     encryptor = cipher.encryptor()
-
     ct = encryptor.update(padded_data) + encryptor.finalize()
     return iv+ct
 
 
 # Receives and returns bytes.
 def decrypt(k, c):
-    #return c # delete this...
-
     iv, ct = c[:AES_BLOCK_LEN], c[AES_BLOCK_LEN:]
     cipher = Cipher(algorithms.AES(k), modes.CBC(iv))
     decryptor = cipher.decryptor()
@@ -224,7 +220,8 @@ def process(socket):
             break
 
 
-# Message is bytes.
+# Sign message using private assymetric key 
+# to ensure data entegrity
 def sign(private_key, message):
     signature = private_key.sign(
         message,
@@ -234,7 +231,8 @@ def sign(private_key, message):
     return signature
 
 
-# Message and signature bytes.
+# Verify messages signature using corresponding 
+# public assymetric key to ensure data entegrity
 def verify(server_public_key, message, signature):
     server_public_key.verify(
         signature,

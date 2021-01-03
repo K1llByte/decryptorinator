@@ -68,7 +68,7 @@ class Client(threading.Thread):
         # Symmetric (shared) key
         self.key = None
   
-        # Private key from the server's certificate
+        # Private key from the server 
         self.private_key = None
         with open(path("TC_Server.key.pem"), "rb") as key_file:
             self.private_key = load_pem_private_key(key_file.read(), password=None)
@@ -97,15 +97,12 @@ class Client(threading.Thread):
         iv = os.urandom(AES_BLOCK_LEN)
         cipher = Cipher(algorithms.AES(self.key), modes.CBC(iv))
         encryptor = cipher.encryptor()
-
         ct = encryptor.update(padded_data) + encryptor.finalize()
         return iv+ct
 
 
     # Receives and returns bytes.
     def decrypt(self, c):
-        #return c # delete this...
-
         iv, ct = c[:AES_BLOCK_LEN], c[AES_BLOCK_LEN:]
         cipher = Cipher(algorithms.AES(self.key), modes.CBC(iv))
         decryptor = cipher.decryptor()
@@ -154,7 +151,6 @@ class Client(threading.Thread):
             self.dh_g_x_as_bytes = self.socket.recv(SOCKET_READ_BLOCK_LEN)
             self.dh_g_x = load_pem_public_key(self.dh_g_x_as_bytes)
         except Exception as e:
-            #print(e)
             print("Something went wrong during handshake ...")
             return False
 
@@ -211,7 +207,6 @@ class Client(threading.Thread):
             print("Invalid Signature")
             return False
 
-        print("> Finished")
         return True
 
 
@@ -245,7 +240,8 @@ class Client(threading.Thread):
                 break
 
 
-    # Message is bytes.
+    # Sign message using private assymetric key 
+    # to ensure data entegrity
     def sign(self, message):
         signature = self.private_key.sign(
         message,
@@ -255,7 +251,8 @@ class Client(threading.Thread):
         return signature
 
 
-    # Message and signature bytes.
+    # Verify messages signature using corresponding 
+    # public assymetric key to ensure data entegrity
     def verify(self, message, signature):
         self.client_public_key.verify(
             signature,
@@ -266,50 +263,63 @@ class Client(threading.Thread):
 
 
     # Receives the certificate object (not the bytes).
+    # Validation of the client's certificate according 
+    # to the CA's certificate (TC CA)
     def validate_certificate(self, debug = False):
         certificate = self.client_certificate
 
+        # CA (Certificate Authority)
         ca_public_key = None
         ca_cert = None
+        # Load x509 CA certificate
         with open(path("TC_CA.cert.pem"), "rb") as cert_file:
             ca_cert = load_pem_x509_certificate(cert_file.read())
             ca_public_key = ca_cert.public_key()
 
+        # Check if the CA's cert Subject Identity is the same as the client's cert Issuer
+        # Check if its the same COUNTRY_NAME
         if ca_cert.subject.get_attributes_for_oid(NameOID.COUNTRY_NAME)[0].value != \
                 certificate.issuer.get_attributes_for_oid(NameOID.COUNTRY_NAME)[0].value:
             debug and print("Mismatched field: %s" % NameOID.COUNTRY_NAME)
             return False
 
+        # Check if its the same STATE_OR_PROVINCE_NAME
         if ca_cert.subject.get_attributes_for_oid(NameOID.STATE_OR_PROVINCE_NAME)[0].value != \
                 certificate.issuer.get_attributes_for_oid(NameOID.STATE_OR_PROVINCE_NAME)[0].value:
             debug and print("Mismatched field: %s" % NameOID.STATE_OR_PROVINCE_NAME)
             return False
 
+        # Check if its the same LOCALITY_NAME
         if ca_cert.subject.get_attributes_for_oid(NameOID.LOCALITY_NAME)[0].value != \
                 certificate.issuer.get_attributes_for_oid(NameOID.LOCALITY_NAME)[0].value:
             debug and print("Mismatched field: %s" % NameOID.LOCALITY_NAME)
             return False
 
+        # Check if its the same ORGANIZATION_NAME
         if ca_cert.subject.get_attributes_for_oid(NameOID.ORGANIZATION_NAME)[0].value != \
                 certificate.issuer.get_attributes_for_oid(NameOID.ORGANIZATION_NAME)[0].value:
             debug and print("Mismatched field: %s" % NameOID.ORGANIZATION_NAME)
             return False
 
+        # Check if its the same ORGANIZATIONAL_UNIT_NAME
         if ca_cert.subject.get_attributes_for_oid(NameOID.ORGANIZATIONAL_UNIT_NAME)[0].value != \
                 certificate.issuer.get_attributes_for_oid(NameOID.ORGANIZATIONAL_UNIT_NAME)[0].value:
             debug and print("Mismatched field: %s" %
                 NameOID.ORGANIZATIONAL_UNIT_NAME)
             return False
 
+        # Check if its the same COMMON_NAME
         if ca_cert.subject.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value != \
                 certificate.issuer.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value:
             debug and print("Mismatched field: %s" % NameOID.COMMON_NAME)
             return False
 
+        # Client's Subject Common Name must be TC Client
         if certificate.subject.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value != "TC Client":
             debug and print("Wrong field (server cert): %s" % NameOID.COMMON_NAME)
             return False
 
+        # Verify the certificate
         ca_public_key.verify(
             certificate.signature,
             certificate.tbs_certificate_bytes,

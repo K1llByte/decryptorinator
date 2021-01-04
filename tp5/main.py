@@ -9,9 +9,9 @@ def prime_factorization(n):
             i += 1
         else:
             n //= i
-            factors.append(i)
+            res.append(i)
     if n > 1:
-        factors.append(n)
+        res.append(n)
     return res
 
 # Greatest common divisor
@@ -85,7 +85,7 @@ if __name__ == '__main__':
     n = 213271
 
     # Prime factorization    
-    factors = prime_factors(n)
+    factors = prime_factorization(n)
     p = factors[0]
     q = factors[1]
 
